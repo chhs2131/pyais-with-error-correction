@@ -11,6 +11,7 @@ def _assemble_messages(*args: bytes) -> NMEAMessage:
     frag_cnt: int = 1
     for msg in args:
         nmea = NMEAMessage(msg)
+        print("is_vaild result: ", nmea.is_valid, "  ais_msg: ", msg)
         temp.append(nmea)
         frags.append(nmea.frag_num)
         frag_cnt = nmea.fragment_count
