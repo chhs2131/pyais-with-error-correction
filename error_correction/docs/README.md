@@ -7,7 +7,7 @@
 - 분류
   - 다중 메세지 해석에서 비롯 : 33%
   - 잘못된 형식 : 63%
-  - 형변환에러 (체크섬 누락) : 4%
+  - 형 변환 에러 (체크섬 필드 누락) : 4%
 ```json
 디코딩 실패 갯수: 231
 {
@@ -117,7 +117,7 @@ def validate_message(msg: bytes) -> None:
 - 사진의 좌측이 디코딩 실패 데이터 모음이며, 우측은 원본 데이터 이다.
 - 우측 원본 데이터에서 녹색으로 표시된 부분이 성공한 데이터인데, 성공 데이터 중 다중 프래그먼트로 구성된 메세지는 없었다.
 ![img.png](img.png)
-- RAW DATA 예시
+- 해당 예외가 발생하는 RAW DATA 예시
 ```json
 !AIVDM,2,1,6,A,56;AG@82Fn188tiKB21PTr1PT4pN1QDF0h4r220t4BK2M6jbN@n@CU0BH888,0*50
 !AIVDM,2,2,6,A,88888888880,2*22
@@ -130,7 +130,8 @@ def validate_message(msg: bytes) -> None:
 ### 잘못된 형식
 **Filed 갯수 맞지 않음**
 - RAW DATA 예시
-```
+- 사용 불가능
+```json
 !AIVDM,1,1,
 !AIVDM,1,1,,A
 !AIVDM,1,1,,B
@@ -138,24 +139,54 @@ def validate_message(msg: bytes) -> None:
 !AIVDM,1,1,,B,16S`9`P
 ```
 
-**Filed 누락**
-- 추측이 가능한 필드가 누락된 경우
+**Header Noise**
+- 노이즈의 영향으로 헤더(!AIVDM & Msg Fragment)가 누락된 경우
+- case1
+```json
+// 오류
+!AIVDM,1,1,IVDM,1,1,,B,B6S`o@P0J2@pvF5Fl@dBOwVTCP06,0*03
+// 아래와 같이 변경시 정상 동작
+!AIVDM,1,1,,B,B6S`o@P0J2@pvF5Fl@dBOwVTCP06,0*03
+```
+- case2
+```json
+// 오류
+!AIVDM,1,,1,1,,A,15AMuR000j93d6TEM@:RCQjJ0<2K,0*38
+// 아래와 같이 변경시 정상 동작
+!AIVDM,1,1,,A,15AMuR000j93d6TEM@:RCQjJ0<2K,0*38
+```
+
+**Radio Filed 누락**
+- 해당 필드는 임의에 라디오코드를 넣어 예측 가능함 (A or B)
+```json
+// 오류
+!AIVDM,1,1,PqHELOg6KlUF0D3p,0*43
+
+// 아래와 같이 예측
+!AIVDM,1,1,,B,PqHELOg6KlUF0D3p,0*43
+```
 
 **Payload 누락**
 - Payload 항목이 없거나 일부만 존재하여 디코딩 불가
 
-**Payload 중간에 , 존재**
+**Payload 중간에 ,(쉼표) 존재**
+- Payload 내에 쉼표를 무시하게하여 해결?
+- 
 ```python
 # 정상동작
 !AIVDM,1,1,,A,16Sg>1000093mK<EGjNDDq9Ep8HpLIMDP?wH24kH,0*7C
+!AIVDM,1,1,,A,16SWrm0P0093doDEM<C00?vep@=4Arf21v@,0*72
+!AIVDM,1,1,,B,16S`=l000093m<FEGkch09;QpD3T6;wwUp2u1,0*10
 
 # 오류발생 (필드 수 초과)
 !AIVDM,1,1,,A,16Sg>1000093mK<EGjNDDq9Ep8Hp,LIMDP?wH24kH,0*7C
+!AIVDM,1,1,,A,16SWrm0P0093doDEM<C00?vep@=4,Arf21v@,0*72
+!AIVDM,1,1,,B,16S`=l000093m<FEGkch09;QpD3T,6;wwUp2u1,0*10
 ```
 
 ### 형변환 에러 (체크섬 누락)
-- checksum 형변환 과정에서 오류 발생
-- checksum 이 존재하나 int형으로 변환할 수 없을 때 형변환 오류 발생
+- checksum 필드 형변환 과정에서 오류 발생
+- checksum 필드가 존재하나 int형으로 변환할 수 없을 때 형변환 오류 발생
 - checksum은 raw data의 가장 뒤쪽에 위치하지만 해당 데이터가 없어 오류 발생
 - RAW DATA 예
 ```json
@@ -184,7 +215,7 @@ def chk_to_int(chk_str: bytes) -> typing.Tuple[int, int]:
 
 ## 기타 확인 사항
 
-### 체크섬 확인 안함 의심
+### 체크섬 확인 안함
 아래 다섯 메세지 모두 checkSum이 다르지만 모두 정상적으로 디코딩됨
 ```python
 !AIVDM,1,1,,A,16S`fAP000a3OsLEKwfmKB:L0@8g,0*55
@@ -193,5 +224,3 @@ def chk_to_int(chk_str: bytes) -> typing.Tuple[int, int]:
 !AIVDM,1,1,,A,16S`fAP000a3OsLEKwfmKB:L0@8g,0*1A
 !AIVDM,1,1,,A,16S`fAP000a3OsLEKwfmKB:L0@8g,0*B5
 ```
-
-
