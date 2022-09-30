@@ -8,7 +8,7 @@
   - 다중 메세지 해석에서 비롯 : 33%
   - 잘못된 형식 : 63%
   - 형 변환 에러 (체크섬 필드 누락) : 4%
-```json
+```python
 디코딩 실패 갯수: 231
 {
     "Missing fragment numbers: [2]": 42,
@@ -118,7 +118,7 @@ def validate_message(msg: bytes) -> None:
 - 우측 원본 데이터에서 녹색으로 표시된 부분이 성공한 데이터인데, 성공 데이터 중 다중 프래그먼트로 구성된 메세지는 없었다.
 ![img.png](img.png)
 - 해당 예외가 발생하는 RAW DATA 예시
-```json
+```python
 !AIVDM,2,1,6,A,56;AG@82Fn188tiKB21PTr1PT4pN1QDF0h4r220t4BK2M6jbN@n@CU0BH888,0*50
 !AIVDM,2,2,6,A,88888888880,2*22
 !AIVDM,2,1,7,A,56SWWC0000037360R0<PV0<5=@hF2222222222000000040Ht00000000000,0*0A
@@ -131,7 +131,7 @@ def validate_message(msg: bytes) -> None:
 **Filed 갯수 맞지 않음**
 - RAW DATA 예시
 - 사용 불가능
-```json
+```python
 !AIVDM,1,1,
 !AIVDM,1,1,,A
 !AIVDM,1,1,,B
@@ -142,14 +142,14 @@ def validate_message(msg: bytes) -> None:
 **Header Noise**
 - 노이즈의 영향으로 헤더(!AIVDM & Msg Fragment)가 누락된 경우
 - case1
-```json
+```python
 // 오류
 !AIVDM,1,1,IVDM,1,1,,B,B6S`o@P0J2@pvF5Fl@dBOwVTCP06,0*03
 // 아래와 같이 변경시 정상 동작
 !AIVDM,1,1,,B,B6S`o@P0J2@pvF5Fl@dBOwVTCP06,0*03
 ```
 - case2
-```json
+```python
 // 오류
 !AIVDM,1,,1,1,,A,15AMuR000j93d6TEM@:RCQjJ0<2K,0*38
 // 아래와 같이 변경시 정상 동작
@@ -158,7 +158,7 @@ def validate_message(msg: bytes) -> None:
 
 **Radio Filed 누락**
 - 해당 필드는 임의에 라디오코드를 넣어 예측 가능함 (A or B)
-```json
+```python
 // 오류
 !AIVDM,1,1,PqHELOg6KlUF0D3p,0*43
 
@@ -189,7 +189,7 @@ def validate_message(msg: bytes) -> None:
 - checksum 필드가 존재하나 int형으로 변환할 수 없을 때 형변환 오류 발생
 - checksum은 raw data의 가장 뒤쪽에 위치하지만 해당 데이터가 없어 오류 발생
 - RAW DATA 예
-```json
+```python
 !AIVDM,1,1,,B,16S`AJ0P0093QJLEKivu1ww600Rw,
 !AIVDM,1,1,,B,16S`i5PP0093U>bEKU:@q?wMr<3O,
 !AIVDM,1,1,,,V,N*64
