@@ -25,10 +25,11 @@ def decode_ais_file(file):
                     # print(decode(data))
                 except Exception as e:
                     print(e, data)
-                    if str(e) == "A NMEA message needs to have exactly 7 comma separated entries.":  # 특정 예외만 처리
-                        error_list.append(data)
+                    # if str(e) == "A NMEA message needs to have exactly 7 comma separated entries.":  # 특정 예외만 표출 처리
+                    #     print(data)
                     # traceback.print_exc()
                     error_count[str(e)] += 1
+                    error_list.append(data)
                     # print(f'[ERROR] Value {data} not in JSON/AIS format')
 
 

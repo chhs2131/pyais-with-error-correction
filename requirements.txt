@@ -2,10 +2,10 @@
 # These requirements are not needed for using the module
 
 # BASE
-bitarray
+bitarray~=2.3.0
 
 # ENCODE
-attrs
+attrs~=21.2.0
 
 # TEST
 flake8
@@ -20,3 +20,9 @@ wheel
 
 # DOCS
 sphinx
+
+libais~=0.17
+configparser~=5.2.0
+lxml~=4.6.3
+setuptools~=58.0.4
+pyais~=2.1.4
