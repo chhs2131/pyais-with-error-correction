@@ -1,6 +1,30 @@
+from pyais import decode
+
+
 class MultiSequenceQueue:
-    def addMessage(self):
-        pass
+    def __init__(self):
+        self.queue = {"1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": []}
+
+    '''
+    list에 멀티메세지를 추가
+    2개가 모일 경우에 둘을 합친 list를 반환함 
+    '''
+
+    def addMessage(self, message):
+        self.validateMultiSequenceMsg(message)
+
+        msg = message.split(',')
+        target = msg[3]
+        self.queue[target].append(message)
+        if len(self.queue[target]) == 2:
+            result = self.queue[target]
+            self.queue[target] = []
+            return result
+
+    def validateMultiSequenceMsg(self, message):
+        msg = message.split(',')
+        if msg[1] == 1 or msg[1] == "1":
+            raise ValueError("싱글 시퀀스 메세지입니다.")
 
     def checkSequenceQueue(self):
         pass
@@ -13,3 +37,23 @@ class MultiSequenceQueue:
 
     def decodeMultiMessage(self):
         pass
+
+
+if __name__ == '__main__':
+    multiSequenceQueue = MultiSequenceQueue()
+
+    # RAW DATA 파일 불러오기
+    file_path = './data/ais_20211104_15.txt'
+
+    with open(file_path) as f:
+        lines = f.readlines()
+        for msg in lines:
+            data = msg
+            try:
+                result = multiSequenceQueue.addMessage(data)
+
+                if result is not None:
+                    print(decode(*result).to_json())
+            except Exception as e:
+                # print(e, data)
+                pass
