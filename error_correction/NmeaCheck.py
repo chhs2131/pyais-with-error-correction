@@ -5,6 +5,7 @@
 # 포맷이상 메세지 -> Payload 추출 -> 전용 decode 로직 -> 추가로 검증도 필요
 
 import re
+from type import NmeaFormatType
 
 class NvmeCheck:
     def validateNvmeFormat(self, string):
@@ -26,7 +27,30 @@ class NvmeCheck:
         if nmea[1] != '1':
             raise ValueError("멀티메세지!")
 
-        return True  # 정상 메세지
+        return True
+
+    def chooseNmeaClass(self, string):
+        result = NmeaFormatType.NmeaType
+
+        count = string.count(',')
+        if string.count(',') != 6:
+            # 마지막 4글자가 0*00 형태일 경우
+            if re.search('\d\*\d\d$', string):  # 끝에 4글자 또는 쉼표포함 5글자를 제거한 후에 가장 뒤에있는 BLOCK을 가져오면 Payload만 가져오는 것이 된다.
+                return result.E_FORMAT_WITH_CHECKSUM
+
+            if count <= 4:
+                return result.TOO_SHORT  # 복구 불가능한 케이스
+            if count == 5:
+                return result.E_FORMAT
+            if count == 7:
+                return re
+            return result.E_FORMAT
+
+        nmea = string.split(',')
+        if nmea[1] != '1':
+            return result.MULTI
+
+        return result.NORMAL  # 정상메세지
 
     def repairNvmeFormat(self, string):
         # 쉼표를 기준으로 데이터를 나눈다.
@@ -57,7 +81,9 @@ if __name__ == '__main__':
         for msg in lines:
             data = msg
             try:
-                nvmeCheck.validateNvmeFormat(data)
+                # nmeaClass = nvmeCheck.validateNvmeFormat(data)
+                nmeaClass = nvmeCheck.chooseNmeaClass(data)
+                print(nmeaClass.name, nmeaClass.value, data)
             except Exception as e:
                 print(e, data)
                 # if str(e) == "A NMEA message needs to have exactly 7 comma separated entries.":  # 특정 예외만 표출 처리
