@@ -21,7 +21,7 @@ class NvmeCheck:
         count = raw_data.count(',')
         if raw_data.count(',') != 6:
             # 마지막 4글자가 0*00 형태일 경우
-            if re.search('\d\*\d\d$', raw_data):  # 끝에 4글자 또는 쉼표포함 5글자를 제거한 후에 가장 뒤에있는 BLOCK을 가져오면 Payload만 가져오는 것이 된다.
+            if self.isHaveChecksum(raw_data):  # 끝에 4글자 또는 쉼표포함 5글자를 제거한 후에 가장 뒤에있는 BLOCK을 가져오면 Payload만 가져오는 것이 된다.
                 return self.nmea_type.E_FORMAT_WITH_CHECKSUM
             if count <= 4:
                 return self.nmea_type.TOO_SHORT  # 복구 불가능한 케이스
@@ -35,13 +35,21 @@ class NvmeCheck:
         if nmea[1] != '1':
             return self.nmea_type.MULTI
 
+        if self.isHaveChecksum(raw_data):
+            return self.nmea_type.WITHOUT_CHECKSUM
         return self.nmea_type.NORMAL  # 정상메세지
+
+    def isHaveChecksum(self, raw_data):
+        return re.search('\d\*\d\d$', raw_data)
 
     def decodeNmeaMsg(self, nmeaClass, raw_data):
         print('==========', nmeaClass.name, raw_data)
         if nmeaClass == self.nmea_type.NORMAL:
             print("normal")
             return self.normal_decoder.decode(raw_data)
+        if nmeaClass == self.nmea_type.WITHOUT_CHECKSUM:
+            print("normal without checksum")
+            return self.normal_decoder.decode_without_checksum(raw_data)
         if nmeaClass == self.nmea_type.MULTI:
             print("multi")
             return self.multi_decoder.decode(raw_data)
