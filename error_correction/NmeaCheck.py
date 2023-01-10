@@ -8,45 +8,42 @@ import re
 from type import NmeaFormatType
 
 class NvmeCheck:
-    def __init__(self):
-        nmea_type = NmeaFormatType.NmeaType
+    nmea_type = NmeaFormatType.NmeaType
 
     def chooseNmeaClass(self, raw_data):
-        result = NmeaFormatType.NmeaType
-
         count = raw_data.count(',')
         if raw_data.count(',') != 6:
             # 마지막 4글자가 0*00 형태일 경우
             if re.search('\d\*\d\d$', raw_data):  # 끝에 4글자 또는 쉼표포함 5글자를 제거한 후에 가장 뒤에있는 BLOCK을 가져오면 Payload만 가져오는 것이 된다.
-                return result.E_FORMAT_WITH_CHECKSUM
+                return self.nmea_type.E_FORMAT_WITH_CHECKSUM
             if count <= 4:
-                return result.TOO_SHORT  # 복구 불가능한 케이스
+                return self.nmea_type.TOO_SHORT  # 복구 불가능한 케이스
             if count == 5:
-                return result.E_FORMAT
+                return self.nmea_type.E_FORMAT
             if count == 7:
                 return re
-            return result.E_FORMAT
+            return self.nmea_type.E_FORMAT
 
         nmea = raw_data.split(',')
         if nmea[1] != '1':
-            return result.MULTI
+            return self.nmea_type.MULTI
 
-        return result.NORMAL  # 정상메세지
+        return self.nmea_type.NORMAL  # 정상메세지
 
     def decodeNmeaMsg(self, nmeaClass, raw_data):
-        if nmeaClass == NmeaFormatType.NmeaType.NORMAL:
+        if nmeaClass == self.nmea_type.NORMAL:
             print("normal")
             pass
-        if nmeaClass == NmeaFormatType.NmeaType.MULTI:
+        if nmeaClass == self.nmea_type.MULTI:
             print("multi")
             pass
-        if nmeaClass == NmeaFormatType.NmeaType.E_FORMAT_WITH_CHECKSUM:
+        if nmeaClass == self.nmea_type.E_FORMAT_WITH_CHECKSUM:
             print("format with checksum")
             pass
-        if nmeaClass == NmeaFormatType.NmeaType.E_FORMAT:
+        if nmeaClass == self.nmea_type.E_FORMAT:
             print("format")
             pass
-        if nmeaClass == NmeaFormatType.NmeaType.TOO_SHORT:
+        if nmeaClass == self.nmea_type.TOO_SHORT:
             print("too short")
             pass
 
