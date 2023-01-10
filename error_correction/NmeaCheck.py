@@ -8,34 +8,13 @@ import re
 from type import NmeaFormatType
 
 class NvmeCheck:
-    def validateNvmeFormat(self, string):
-        count = string.count(',')
-        if string.count(',') != 6:
-            # 마지막 4글자가 0*00 형태일 경우
-            if re.search('\d\*\d\d$', string):  # 끝에 4글자 또는 쉼표포함 5글자를 제거한 후에 가장 뒤에있는 BLOCK을 가져오면 Payload만 가져오는 것이 된다.
-                raise ValueError("========>")
-
-            if count == 5:  # 가장 뒤에 블럭 추출
-                raise ValueError("555555555555555")
-            if count == 7:
-                raise ValueError("777777777777777")
-            raise ValueError("jjjjjjjjjjjjjjjj")
-
-        nmea = string.split(',')
-        if len(nmea) < 4:
-            raise ValueError("해석하기에는 너~무 작은 메시지")  # 복구 불가능한 케이스
-        if nmea[1] != '1':
-            raise ValueError("멀티메세지!")
-
-        return True
-
-    def chooseNmeaClass(self, string):
+    def chooseNmeaClass(self, raw_data):
         result = NmeaFormatType.NmeaType
 
-        count = string.count(',')
-        if string.count(',') != 6:
+        count = raw_data.count(',')
+        if raw_data.count(',') != 6:
             # 마지막 4글자가 0*00 형태일 경우
-            if re.search('\d\*\d\d$', string):  # 끝에 4글자 또는 쉼표포함 5글자를 제거한 후에 가장 뒤에있는 BLOCK을 가져오면 Payload만 가져오는 것이 된다.
+            if re.search('\d\*\d\d$', raw_data):  # 끝에 4글자 또는 쉼표포함 5글자를 제거한 후에 가장 뒤에있는 BLOCK을 가져오면 Payload만 가져오는 것이 된다.
                 return result.E_FORMAT_WITH_CHECKSUM
 
             if count <= 4:
@@ -46,27 +25,23 @@ class NvmeCheck:
                 return re
             return result.E_FORMAT
 
-        nmea = string.split(',')
+        nmea = raw_data.split(',')
         if nmea[1] != '1':
             return result.MULTI
 
         return result.NORMAL  # 정상메세지
 
-    def repairNvmeFormat(self, string):
-        # 쉼표를 기준으로 데이터를 나눈다.
-        data = string.split(',')
-
-        # 7개이지만 에러가 나는 경우에 복구
-        # i = 0
-        # for d in data:
-        #     if i == 0 and d != '!AIVDM':
-        #         d = '!AIVDM'
-        #     if i == 1 and
-        #     i += 1
-
-        pass
-
-    def statsNvme(self):
+    def decodeNmeaMsg(self, nmeaClass, raw_data):
+        if nmeaClass == NmeaFormatType.NmeaType.NORMAL:
+            pass
+        if nmeaClass == NmeaFormatType.NmeaType.MULTI:
+            pass
+        if nmeaClass == NmeaFormatType.NmeaType.E_FORMAT_WITH_CHECKSUM:
+            pass
+        if nmeaClass == NmeaFormatType.NmeaType.E_FORMAT:
+            pass
+        if nmeaClass == NmeaFormatType.NmeaType.TOO_SHORT:
+            pass
         pass
 
 
@@ -86,15 +61,3 @@ if __name__ == '__main__':
                 print(nmeaClass.name, nmeaClass.value, data)
             except Exception as e:
                 print(e, data)
-                # if str(e) == "A NMEA message needs to have exactly 7 comma separated entries.":  # 특정 예외만 표출 처리
-                #     print(data)
-                # traceback.print_exc()
-                ## error_count[str(e)] += 1
-                ## error_list.append(data)
-                # print(f'[ERROR] Value {data} not in JSON/AIS format')
-
-    '''
-    # 디코딩 결과 출력
-    print("디코딩 실패 갯수:", len(error_list))
-    print(dumps(error_count, indent=4))
-    '''
