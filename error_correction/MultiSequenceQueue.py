@@ -3,7 +3,7 @@ from pyais import decode
 
 class MultiSequenceQueue:
     def __init__(self):
-        self.queue = {"1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": []}
+        self.queue = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": []}
 
     '''
     list에 멀티메세지를 추가
