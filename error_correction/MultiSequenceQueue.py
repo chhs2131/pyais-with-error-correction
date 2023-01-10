@@ -10,6 +10,10 @@ class MultiSequenceQueue:
     2개가 모일 경우에 둘을 합친 list를 반환함 
     '''
 
+    def decode(self, message):
+        message_list = self.addMessage(message)
+        return self.decodeList(message_list)
+
     def addMessage(self, message):
         self.validateMultiSequenceMsg(message)
 
@@ -25,6 +29,10 @@ class MultiSequenceQueue:
         msg = message.split(',')
         if msg[1] == 1 or msg[1] == "1":
             raise ValueError("싱글 시퀀스 메세지입니다.")
+
+    def decodeList(self, message_list):
+        if message_list is not None:
+            return decode(*message_list)
 
     def checkSequenceQueue(self):
         pass

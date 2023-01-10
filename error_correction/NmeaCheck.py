@@ -6,9 +6,16 @@
 
 import re
 from type import NmeaFormatType
+import NormalDecoding
+import MultiSequenceQueue
+import FormatErrorDecoding
+
 
 class NvmeCheck:
     nmea_type = NmeaFormatType.NmeaType
+    normal_decoder = NormalDecoding.NormalDecoder()
+    multi_decoder = MultiSequenceQueue.MultiSequenceQueue()
+    format_decoder = FormatErrorDecoding.FormatDecoder()
 
     def chooseNmeaClass(self, raw_data):
         count = raw_data.count(',')
@@ -21,7 +28,7 @@ class NvmeCheck:
             if count == 5:
                 return self.nmea_type.E_FORMAT
             if count == 7:
-                return re
+                return self.nmea_type.E_FORMAT
             return self.nmea_type.E_FORMAT
 
         nmea = raw_data.split(',')
@@ -31,20 +38,23 @@ class NvmeCheck:
         return self.nmea_type.NORMAL  # 정상메세지
 
     def decodeNmeaMsg(self, nmeaClass, raw_data):
+        print('==========', nmeaClass.name, raw_data)
         if nmeaClass == self.nmea_type.NORMAL:
             print("normal")
-            pass
+            return self.normal_decoder.decode(raw_data)
         if nmeaClass == self.nmea_type.MULTI:
             print("multi")
-            pass
+            return self.multi_decoder.decode(raw_data)
         if nmeaClass == self.nmea_type.E_FORMAT_WITH_CHECKSUM:
             print("format with checksum")
+            return self.format_decoder.decode_with_checksum(raw_data)
             pass
         if nmeaClass == self.nmea_type.E_FORMAT:
             print("format")
+            return self.format_decoder.decode(raw_data)
             pass
         if nmeaClass == self.nmea_type.TOO_SHORT:
-            print("too short")
+            print("too short - invalid")
             pass
 
 
@@ -58,10 +68,17 @@ if __name__ == '__main__':
         lines = f.readlines()
         for msg in lines:
             data = msg
+            nmeaClass = nvmeCheck.chooseNmeaClass(data)
+            # print(nvmeCheck.decodeNmeaMsg(nmeaClass, data), data)
             try:
-                # nmeaClass = nvmeCheck.validateNvmeFormat(data)
-                nmeaClass = nvmeCheck.chooseNmeaClass(data)
                 print(nvmeCheck.decodeNmeaMsg(nmeaClass, data), data)
-                # print(nmeaClass.name, nmeaClass.value, data)
             except Exception as e:
-                print(e, data)
+                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + str(e))
+
+            # try:
+            #     # nmeaClass = nvmeCheck.validateNvmeFormat(data)
+            #     nmeaClass = nvmeCheck.chooseNmeaClass(data)
+            #     print(nvmeCheck.decodeNmeaMsg(nmeaClass, data), data)
+            #     # print(nmeaClass.name, nmeaClass.value, data)
+            # except Exception as e:
+            #     print(e, data)
