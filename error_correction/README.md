@@ -36,3 +36,15 @@
 - [ ] 체크섬 복구여부 결정
 - [ ] 이후 기존 오픈소스와 융합
 - [ ] 정제된 LIST를 반환하기
+
+---
+
+# 발견된 문제점
+
+### 멀티메세지
+- [x] 시퀀스넘버가 0번으로 오는 경우
+- [ ] [MULTI] Missing fragment numbers: [2] !AIVDM,2,1,0,A,56SgAOPIVIVKK3L0000@4F0eUDpN0Pt00000000000000400000000000000,0*6B
+
+### 형식문제
+- [x] [E_FORMAT] Invalid character: *42 !AIVDM,1,1,,B,16S`1lP0h093mGrEGj89BbiF,2,9,A,00000000000,2*2D
+

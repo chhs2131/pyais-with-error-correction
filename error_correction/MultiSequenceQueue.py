@@ -34,6 +34,7 @@ class MultiSequenceQueue:
         if message_list is not None:
             return decode(*message_list)
 
+
     def checkSequenceQueue(self):
         pass
 
@@ -58,10 +59,9 @@ if __name__ == '__main__':
         for msg in lines:
             data = msg
             try:
-                result = multiSequenceQueue.addMessage(data)
-
+                result = multiSequenceQueue.decode(data)
                 if result is not None:
-                    print(decode(*result).to_json())
+                    print(result.to_json())
             except Exception as e:
-                # print(e, data)
-                pass
+                print(e, data)
+                # pass
