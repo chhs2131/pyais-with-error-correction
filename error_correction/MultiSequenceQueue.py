@@ -34,7 +34,6 @@ class MultiSequenceQueue:
         if message_list is not None:
             return decode(*message_list)
 
-
     def checkSequenceQueue(self):
         pass
 
