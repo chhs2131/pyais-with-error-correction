@@ -26,10 +26,6 @@ class NvmeCheck:
                 return self.nmea_type.E_FORMAT_WITH_CHECKSUM
             if count <= 4:
                 return self.nmea_type.TOO_SHORT  # 복구 불가능한 케이스
-            if count == 5:
-                return self.nmea_type.E_FORMAT
-            if count == 7:
-                return self.nmea_type.E_FORMAT
             return self.nmea_type.E_FORMAT
 
         nmea = raw_data.split(',')
@@ -44,7 +40,6 @@ class NvmeCheck:
         return re.search('\d\*\d\d$', raw_data)
 
     def decodeNmeaMsg(self, nmeaClass, raw_data):
-        # print('==========', nmeaClass.name, raw_data)
         if nmeaClass == self.nmea_type.NORMAL:
             return self.normal_decoder.decode(raw_data)
         if nmeaClass == self.nmea_type.WITHOUT_CHECKSUM:
