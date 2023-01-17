@@ -20,7 +20,7 @@ class MultiSequenceQueue:
         msg = message.split(',')
         target = msg[3]
         self.queue[target].append(message)
-        if len(self.queue[target]) == 2:
+        if len(self.queue[target]) == msg[1]:
             result = self.queue[target]
             self.queue[target] = []
             return result
@@ -33,6 +33,7 @@ class MultiSequenceQueue:
     def decodeList(self, message_list):
         if message_list is not None:
             return decode(*message_list)
+        return None
 
     def checkSequenceQueue(self):
         pass

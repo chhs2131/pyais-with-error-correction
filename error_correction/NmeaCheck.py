@@ -65,5 +65,5 @@ if __name__ == '__main__':
             try:
                 nvmeCheck.decodeNmeaMsg(nmeaClass, data)
             except Exception as e:
-                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", '[' + nmeaClass.name + ']', str(e), data, flush=True)
+                print("!!!!!!!!!!!!!!!!!!!", '[' + nmeaClass.name + ']', str(e), "\n  =>RAW:", data, flush=True)
                 # traceback.print_exc()
