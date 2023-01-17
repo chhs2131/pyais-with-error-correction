@@ -12,12 +12,6 @@ class FormatDecoder:
 
         return util.decode_into_bit_array(binary_raw_data, fill_bit)
 
-    def decode_with_checksum(self, raw_data):
-        last_field, fill_bit = self.pick_last_field(raw_data)
-        binary_raw_data = bytes(last_field, 'utf-8')
-
-        return util.decode_into_bit_array(binary_raw_data, fill_bit)
-
     def pick_last_field(self, raw_data):
         # 체크섬이 존재하는 경우
         checksum_field = re.search(CHECKSUM_PATTERN, raw_data)

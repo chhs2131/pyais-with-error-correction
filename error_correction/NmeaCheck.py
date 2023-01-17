@@ -20,12 +20,9 @@ class NvmeCheck:
 
     def chooseNmeaClass(self, raw_data):
         count = raw_data.count(',')
-        if raw_data.count(',') != 6:
-            # 마지막 4글자가 0*00 형태일 경우
-            if self.isHaveChecksum(raw_data):  # 끝에 4글자 또는 쉼표포함 5글자를 제거한 후에 가장 뒤에있는 BLOCK을 가져오면 Payload만 가져오는 것이 된다.
-                return self.nmea_type.E_FORMAT_WITH_CHECKSUM
-            if count <= 4:
-                return self.nmea_type.TOO_SHORT  # 복구 불가능한 케이스
+        if count <= 4:
+            return self.nmea_type.TOO_SHORT  # 복구 불가능한 케이스
+        if count != 6:
             return self.nmea_type.E_FORMAT
 
         nmea = raw_data.split(',')
@@ -46,8 +43,6 @@ class NvmeCheck:
             return self.normal_decoder.decode_without_checksum(raw_data)
         if nmeaClass == self.nmea_type.MULTI:
             return self.multi_decoder.decode(raw_data)
-        if nmeaClass == self.nmea_type.E_FORMAT_WITH_CHECKSUM:
-            return self.format_decoder.decode_with_checksum(raw_data)
         if nmeaClass == self.nmea_type.E_FORMAT:
             return self.format_decoder.decode(raw_data)
         if nmeaClass == self.nmea_type.TOO_SHORT:
@@ -58,7 +53,8 @@ if __name__ == '__main__':
     nvmeCheck = NvmeCheck()
 
     # RAW DATA 파일 불러오기
-    file_path = './data/ais_20211104_15.txt'
+    # file_path = './data/ais_20211104_15.txt'
+    file_path = './data/' + 'for_test'
 
     with open(file_path) as f:
         lines = f.readlines()
