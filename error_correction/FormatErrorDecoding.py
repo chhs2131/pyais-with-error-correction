@@ -1,4 +1,5 @@
 from pyais import decode as ais_decode
+from pyais import messages
 from pyais import util
 import re
 
@@ -10,7 +11,12 @@ class FormatDecoder:
         last_field, fill_bit = self.pick_last_field(raw_data)
         binary_raw_data = bytes(last_field, 'utf-8')
 
-        return util.decode_into_bit_array(binary_raw_data, fill_bit)
+        try:  # ais_id(=msgType), bit_arr(=payload)
+            bit_arr = util.decode_into_bit_array(binary_raw_data, fill_bit)
+            ais_id = util.get_int(bit_arr, 0, 6)
+            return messages.MSG_CLASS[ais_id].from_bitarray(bit_arr)  # msg class별로 다른 bit parsing 로직 동작
+        except KeyError as e:
+            raise Exception(f"The message {raw_data} is not supported!") from e
 
     def pick_last_field(self, raw_data):
         # 체크섬이 존재하는 경우

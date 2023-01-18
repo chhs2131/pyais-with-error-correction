@@ -48,3 +48,86 @@
 ### 형식문제
 - [x] [E_FORMAT] Invalid character: *42 !AIVDM,1,1,,B,16S`1lP0h093mGrEGj89BbiF,2,9,A,00000000000,2*2D
 
+
+
+# decode 순서
+- from pyais import decode
+- decode(raw_data)
+```python
+def decode(*args: typing.Union[str, bytes]) -> ANY_MESSAGE:
+    parts = tuple(msg.encode('utf-8') if isinstance(msg, str) else msg for msg in args)
+    nmea = _assemble_messages(*parts)
+    print(nmea)  # <- b'!AIVDM,1,1,,A,16S`fAP000a3OsLEKwfmKB:L0@8g,0*55'
+    return nmea.decode()
+```
+
+- payload값(bit_array)과 ais_id(msgType) 가져오기
+```python
+# Finally decode bytes into bits
+        self.bit_array: bitarray = decode_into_bit_array(self.payload, self.fill_bits)
+        self.ais_id: int = get_int(self.bit_array, 0, 6)
+```
+
+```python
+    def decode(self) -> "ANY_MESSAGE":
+        """
+        Decode the NMEA message.
+        @return: The decoded message class as a superclass of `Payload`.
+
+        >>> nmea = NMEAMessage(b"!AIVDO,1,1,,,B>qc:003wk?8mP=18D3Q3wgTiT;T,0*13").decode()
+        MessageType18(msg_type=18, ...)
+        """
+        try:
+            # self.bit_array => bitarray('000001000110100011101000101110010001100000000000000000000000101001000011011111111011011100010101011011111111101110110101011011010010001010011100000000010000001000101111')
+            return MSG_CLASS[self.ais_id].from_bitarray(self.bit_array)  # <- MessageType1(msg_type=1, repeat=0, mmsi=257576000, status=<NavigationStatus.UnderWayUsingEngine: 0>, turn=0.0, speed=11.7, accuracy=True, lon=5.653795, lat=59.016863, course=137.9, heading=137, second=29, maneuver=0, spare_1=b'\x00', raim=False, radio=66617)
+        except KeyError as e:
+            raise UnknownMessageException(f"The message {self} is not supported!") from e
+```
+
+```python
+    @classmethod
+    def from_bitarray(cls, bit_arr: bitarray) -> "ANY_MESSAGE":
+        cur: int = 0
+        end: int = 0
+        kwargs: typing.Dict[str, typing.Any] = {}
+
+        # Iterate over the bits until the last bit of the bitarray or all fields are fully decoded
+        for field in cls.fields():
+
+            if end >= len(bit_arr):
+                # All fields that did not fit into the bit array are None
+                kwargs[field.name] = None
+                continue
+
+            width = field.metadata['width']
+            d_type = field.metadata['d_type']
+            converter = field.metadata['to_converter']
+
+            end = min(len(bit_arr), cur + width)
+            bits = bit_arr[cur: end]
+
+            val: typing.Any
+            # Get the correct data type and decoding function
+            if d_type in (int, bool, float):
+                shift = (8 - ((end - cur) % 8)) % 8
+                if field.metadata['signed']:
+                    val = from_bytes_signed(bits) >> shift
+                else:
+                    val = from_bytes(bits) >> shift
+                val = d_type(val)
+            elif d_type == str:
+                val = decode_bin_as_ascii6(bits)
+            elif d_type == bytes:
+                val = bits2bytes(bits)
+            else:
+                raise InvalidDataTypeException(d_type)
+
+            val = converter(val) if converter is not None else val
+
+            val = cls.__force_type(field, val)
+            kwargs[field.name] = val
+
+            cur = end
+
+        return cls(**kwargs)  # type:ignore
+```
