@@ -1,4 +1,5 @@
-from pyais import decode as ais_decode
+import traceback
+
 from pyais import messages
 from pyais import util
 import re
@@ -24,9 +25,13 @@ class FormatDecoder:
         fill_bit = 0
         if checksum_field is not None:
             fill_bit = int(checksum_field.group()[0])  # Fillbit를 확인
-            raw_data = re.sub(CHECKSUM_PATTERN, '', raw_data)  # Checksum Field는 삭제
-            raw_data.rstrip(',')
+            raw_data = re.sub('(,)?' + CHECKSUM_PATTERN, '', raw_data)  # Checksum Field는 삭제
 
         # 마지막 필드를 가져온다
         r = raw_data.split(',')
         return r[len(r) - 1].strip(), fill_bit
+
+
+if __name__ == '__main__':
+    fd = FormatDecoder()
+    print(fd.decode("!AIVDM,1,,1,1,,A,15AMuR000j93d6TEM@:RCQjJ0<2K,0*38"))
