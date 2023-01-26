@@ -473,6 +473,56 @@ class Payload(abc.ABC):
 
         return cls(**kwargs)  # type:ignore
 
+
+
+    @classmethod
+    def from_bitarray_custom(cls, bit_arr: bitarray) -> "ANY_MESSAGE":
+        cur: int = 0
+        end: int = 0
+        kwargs: typing.Dict[str, typing.Any] = {}
+
+        # Iterate over the bits until the last bit of the bitarray or all fields are fully decoded
+        for field in cls.fields():
+
+            if end >= len(bit_arr):
+                # All fields that did not fit into the bit array are None
+                kwargs[field.name] = None
+                continue
+
+            width = field.metadata['width']
+            d_type = field.metadata['d_type']
+            converter = field.metadata['to_converter']
+
+            end = min(len(bit_arr), cur + width)
+            bits = bit_arr[cur: end]
+
+            val: typing.Any
+            # Get the correct data type and decoding function
+            if d_type in (int, bool, float):
+                shift = (8 - ((end - cur) % 8)) % 8
+                if field.metadata['signed']:
+                    val = from_bytes_signed(bits) >> shift
+                else:
+                    val = from_bytes(bits) >> shift
+                val = d_type(val)
+            elif d_type == str:
+                val = decode_bin_as_ascii6(bits)
+            elif d_type == bytes:
+                val = bits2bytes(bits)
+            else:
+                raise InvalidDataTypeException(d_type)
+
+            val = converter(val) if converter is not None else val
+
+            val = cls.__force_type(field, val)
+            kwargs[field.name] = val
+
+            cur = end
+
+        return cls(**kwargs)  # type:ignore
+
+
+
     def asdict(self, enum_as_int: bool = False) -> typing.Dict[str, typing.Optional[NMEA_VALUE]]:
         """
         Convert the message to a dictionary.

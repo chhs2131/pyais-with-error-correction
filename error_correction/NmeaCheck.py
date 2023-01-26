@@ -3,9 +3,12 @@
 # 정상 메세지 -> 디코딩 로직
 # 멀티 메세지 -> 멀티메세지 큐 -> 디코딩 로직
 # 포맷이상 메세지 -> Payload 추출 -> 전용 decode 로직 -> 추가로 검증도 필요
-
+import time
 import traceback
 import re
+
+from pyais.exceptions import UnknownMessageException
+
 from type import NmeaFormatType
 import NormalDecoding
 import MultiSequenceQueue
@@ -49,6 +52,17 @@ class NvmeCheck:
             pass
 
 
+def printException(title, raw_data, body=""):
+    print("==========================================================")
+    print('[' + title + ' Exception]', "\n",
+          str(e), "\n  =>RAW:", raw_data, "\n",
+          body)
+    traceback.print_exc()
+    time.sleep(1)
+    print("==========================================================")
+    print(flush=True)
+
+
 if __name__ == '__main__':
     nvmeCheck = NvmeCheck()
 
@@ -64,6 +78,7 @@ if __name__ == '__main__':
 
             try:
                 nvmeCheck.decodeNmeaMsg(nmeaClass, data)
+            except UnknownMessageException as e:
+                printException(nmeaClass.name, data, "존재하지않는 MessageType입니다.")
             except Exception as e:
-                print("!!!!!!!!!!!!!!!!!!!", '[' + nmeaClass.name + ']', str(e), "\n  =>RAW:", data, flush=True)
-                # traceback.print_exc()
+                printException(nmeaClass.name, data)
