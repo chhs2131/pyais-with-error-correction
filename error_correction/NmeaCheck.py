@@ -3,6 +3,7 @@
 # 정상 메세지 -> 디코딩 로직
 # 멀티 메세지 -> 멀티메세지 큐 -> 디코딩 로직
 # 포맷이상 메세지 -> Payload 추출 -> 전용 decode 로직 -> 추가로 검증도 필요
+import datetime
 import time
 import traceback
 import re
@@ -13,6 +14,14 @@ from type import NmeaFormatType
 import NormalDecoding
 import MultiSequenceQueue
 import FormatErrorDecoding
+from util.SerializeUtil import to_json_from
+from util.SerializeUtil import to_dict_from_attr
+
+
+import logging
+logger = logging.getLogger()
+handler = logging.FileHandler('decoding_dict.txt')
+logger.addHandler(handler)
 
 
 class NvmeCheck:
@@ -53,14 +62,15 @@ class NvmeCheck:
 
 
 def printException(title, raw_data, body=""):
-    print("==========================================================")
-    print('[' + title + ' Exception]', "\n",
-          str(e), "\n  =>RAW:", raw_data, "\n",
-          body)
-    traceback.print_exc()
-    time.sleep(1)
-    print("==========================================================")
-    print(flush=True)
+    if False:
+        print("==========================================================")
+        print('[' + title + ' Exception]', "\n",
+              str(e), "\n  =>RAW:", raw_data, "\n",
+              body)
+        traceback.print_exc()
+        time.sleep(1)
+        print("==========================================================")
+        print(flush=True)
 
 
 if __name__ == '__main__':
@@ -77,7 +87,13 @@ if __name__ == '__main__':
             nmeaClass = nvmeCheck.chooseNmeaClass(data)
 
             try:
-                nvmeCheck.decodeNmeaMsg(nmeaClass, data)
+                decoding_msg = nvmeCheck.decodeNmeaMsg(nmeaClass, data)
+                if decoding_msg is None:
+                    continue
+
+                decoding_msg = to_dict_from_attr(decoding_msg)
+                decoding_msg["datetime"] = str(datetime.datetime.now())
+                logger.error(decoding_msg)
             except UnknownMessageException as e:
                 printException(nmeaClass.name, data, "존재하지않는 MessageType입니다.")
             except Exception as e:
