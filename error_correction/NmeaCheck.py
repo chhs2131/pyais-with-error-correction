@@ -17,6 +17,7 @@ import MultiSequenceQueue
 import FormatErrorDecoding
 from util.SerializeUtil import to_json_from
 from util.SerializeUtil import to_dict_from_attr
+import pandas as pd
 
 import logging
 logger = logging.getLogger()
@@ -78,8 +79,9 @@ if __name__ == '__main__':
 
     # RAW DATA 파일 불러오기
     # file_path = './data/ais_20211104_15.txt'
-    file_path = './data/' + 'in/AIStoDB_rawdata.log'
+    file_path = './data/' + 'in/AIStoDB_rawdata_small.log'
 
+    good_list = []
     error_list = []
     with open(file_path) as f:
         lines = f.readlines()
@@ -97,7 +99,8 @@ if __name__ == '__main__':
 
                 decoding_msg = to_dict_from_attr(decoding_msg)
                 decoding_msg["datetime"] = ais_datetime
-                logger.error(decoding_msg)
+                good_list.append(decoding_msg)
+                # logger.error(decoding_msg)
             except UnknownMessageException as e:
                 printException(nmeaClass.name, ais_msg, "존재하지않는 MessageType입니다.")
                 error_list.append(ais_msg)
@@ -108,3 +111,14 @@ if __name__ == '__main__':
     print("================================== result ==========================================")
     print("에러갯수: ", len(error_list))
     print(error_list)
+
+    print("================================== statistic ==========================================")
+    df = pd.DataFrame(good_list)
+    # pd.set_option('display.max_columns', 10)
+    print(df.head())
+    print(df.info())
+    print(df.count())
+    print(df.describe(include='all'))
+
+    # df.describe(include='all').to_csv("ais_layer_done_description.csv")
+    print(df[df['msg_type'] == 1])
