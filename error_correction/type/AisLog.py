@@ -6,12 +6,14 @@ class AisLog:
 
     def parser(self, log_message):
         tokens = log_message.split()
-        print(tokens)
         if len(tokens) == 1:
             return tokens[0], None
         if len(tokens) != 3:
             raise
         return tokens[2], datetime.strptime(tokens[0] + " " + tokens[1], '%Y-%m-%d %H:%M:%S.%f')
+
+    def getAisAndDatetime(self):
+        return self.ais, self.datetime
 
     def getAis(self):
         return self.ais

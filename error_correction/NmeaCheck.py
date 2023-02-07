@@ -11,12 +11,12 @@ import re
 from pyais.exceptions import UnknownMessageException
 
 from type import NmeaFormatType
+from type import AisLog
 import NormalDecoding
 import MultiSequenceQueue
 import FormatErrorDecoding
 from util.SerializeUtil import to_json_from
 from util.SerializeUtil import to_dict_from_attr
-
 
 import logging
 logger = logging.getLogger()
@@ -83,18 +83,21 @@ if __name__ == '__main__':
     with open(file_path) as f:
         lines = f.readlines()
         for msg in lines:
-            data = msg
-            nmeaClass = nvmeCheck.chooseNmeaClass(data)
+            try:
+                ais_msg, ais_datetime = AisLog.AisLog(msg).getAisAndDatetime()
+            except Exception as e:
+                continue
 
             try:
-                decoding_msg = nvmeCheck.decodeNmeaMsg(nmeaClass, data)
+                nmeaClass = nvmeCheck.chooseNmeaClass(ais_msg)
+                decoding_msg = nvmeCheck.decodeNmeaMsg(nmeaClass, ais_msg)
                 if decoding_msg is None:
                     continue
 
                 decoding_msg = to_dict_from_attr(decoding_msg)
-                decoding_msg["datetime"] = str(datetime.datetime.now())
+                decoding_msg["datetime"] = ais_datetime
                 logger.error(decoding_msg)
             except UnknownMessageException as e:
-                printException(nmeaClass.name, data, "존재하지않는 MessageType입니다.")
+                printException(nmeaClass.name, ais_msg, "존재하지않는 MessageType입니다.")
             except Exception as e:
-                printException(nmeaClass.name, data)
+                printException(nmeaClass.name, ais_msg)
