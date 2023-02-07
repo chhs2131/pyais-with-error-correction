@@ -78,8 +78,9 @@ if __name__ == '__main__':
 
     # RAW DATA 파일 불러오기
     # file_path = './data/ais_20211104_15.txt'
-    file_path = './data/' + 'for_test'
+    file_path = './data/' + 'in/AIStoDB_rawdata.log'
 
+    error_list = []
     with open(file_path) as f:
         lines = f.readlines()
         for msg in lines:
@@ -99,5 +100,11 @@ if __name__ == '__main__':
                 logger.error(decoding_msg)
             except UnknownMessageException as e:
                 printException(nmeaClass.name, ais_msg, "존재하지않는 MessageType입니다.")
+                error_list.append(ais_msg)
             except Exception as e:
                 printException(nmeaClass.name, ais_msg)
+                error_list.append(ais_msg)
+
+    print("================================== result ==========================================")
+    print("에러갯수: ", len(error_list))
+    print(error_list)

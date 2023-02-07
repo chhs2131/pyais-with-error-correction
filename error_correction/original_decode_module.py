@@ -10,6 +10,7 @@ from pyais import decode
 from json import dumps, loads
 import sys
 import traceback
+from type import AisLog
 
 from collections import defaultdict
 error_list = []  # Save Parsing Error Datas
@@ -27,12 +28,16 @@ def decode_ais_file(file):
     with open(file) as f:
             lines = f.readlines()
             for msg in lines:
-                data = msg
+                try:
+                    data, ais_datetime = AisLog.AisLog(msg).getAisAndDatetime()
+                except Exception as e:
+                    continue
+
                 try:
                     ais_data = decode(data).to_json()
                     # print(decode(data))
                 except Exception as e:
-                    print(e, data)
+                    # print(e, data)
                     # if str(e) == "A NMEA message needs to have exactly 7 comma separated entries.":  # 특정 예외만 표출 처리
                     #     print(data)
                     # traceback.print_exc()
@@ -47,7 +52,10 @@ if __name__ == '__main__':
     #     print("Insufficient arguments")
     #     sys.exit()
     # file_path = sys.argv[1]
-    file_path = './data/' + 'for_test'
+    # file_path = './data/' + 'for_test'
+    file_path = './data/' + 'in/AIStoDB_rawdata.log'
+
+
 
     # 디코딩 진행
     decode_ais_file(file_path)
